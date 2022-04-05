@@ -5,7 +5,7 @@ Describe the characteristics of this distributed system:
 - Which interaction style (synchrony, invocation semantics) is used in the
 communication between the test client and your Web service?
   - synchronous communication
-  - payload semantics -> the soap-message describes the action that should be executed
+  - interface semantics -> specific methods are used instead of generic ones
 
 - Describe the activities of the system components during the communication
 process.
