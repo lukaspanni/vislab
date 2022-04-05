@@ -29,4 +29,4 @@ characteristics.
   - document-style
   
 - What kind of message encoding was used?
-  - ?
+  - literal
