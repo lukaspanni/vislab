@@ -14,38 +14,54 @@ import static org.junit.Assert.assertEquals;
 
 public class FibonacciTest {
 
-	private HttpServer server;
-	private WebTarget target;
+    private HttpServer server;
+    private WebTarget target;
 
-	@Before
-	public void setUp() throws Exception {
-		// start the server
-		server = Main.startServer();
-		// create the client
-		Client c = ClientBuilder.newClient();
+    @Before
+    public void setUp() throws Exception {
+        // start the server
+        server = Main.startServer();
+        // create the client
+        Client c = ClientBuilder.newClient();
 
-		// uncomment the following line if you want to enable
-		// support for JSON in the client (you also have to uncomment
-		// dependency on jersey-media-json module in pom.xml and
-		// Main.startServer())
-		// --
-		// c.configuration().enable(new
-		// org.glassfish.jersey.media.json.JsonJaxbFeature());
+        // uncomment the following line if you want to enable
+        // support for JSON in the client (you also have to uncomment
+        // dependency on jersey-media-json module in pom.xml and
+        // Main.startServer())
+        // --
+        // c.configuration().enable(new
+        // org.glassfish.jersey.media.json.JsonJaxbFeature());
 
-		target = c.target(Main.BASE_URI);
-	}
+        target = c.target(Main.BASE_URI);
+    }
 
-	@After
-	public void tearDown() throws Exception {
-		server.shutdown();
-	}
+    @After
+    public void tearDown() throws Exception {
+        server.shutdown();
+    }
 
-	/**
-	 * Test to see that the message "Got it!" is sent in the response.
-	 */
-	@Test
-	public void testSayHello() {
-		String responseMsg = target.path("helloworld").request().accept(MediaType.TEXT_PLAIN).get(String.class);
-		assertEquals("Hallo Welt!", responseMsg);
-	}
+    @Test
+    public void testGetInitialFibonacciNumber() {
+        int response = target.path("fibonacci").request().accept(MediaType.TEXT_PLAIN).get(Integer.class);
+        assertEquals(1, response);
+    }
+
+    @Test
+    public void testIncrementFibonacciNumber() {
+        target.path("fibonacci").request().accept(MediaType.WILDCARD).post(null);
+        int response = target.path("fibonacci").request().accept(MediaType.TEXT_PLAIN).get(Integer.class);
+        assertEquals(2, response);
+        target.path("fibonacci").request().accept(MediaType.WILDCARD).post(null);
+        int response2 = target.path("fibonacci").request().accept(MediaType.TEXT_PLAIN).get(Integer.class);
+        assertEquals(3, response2);
+    }
+
+    @Test
+    public void testResetFibonacciNumber() {
+        target.path("fibonacci").request().accept(MediaType.WILDCARD).post(null);
+        target.path("fibonacci").request().accept(MediaType.WILDCARD).post(null);
+        target.path("fibonacci").request().accept(MediaType.WILDCARD).delete();
+        int response = target.path("fibonacci").request().accept(MediaType.TEXT_PLAIN).get(Integer.class);
+        assertEquals(1, response);
+    }
 }
