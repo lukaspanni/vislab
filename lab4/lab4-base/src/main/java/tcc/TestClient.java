@@ -162,11 +162,40 @@ public class TestClient {
             Response confirmFlightResponse = confirmFlightTarget.request().accept(MediaType.TEXT_PLAIN).put(Entity.json(""));
             System.out.println("Confirm flight response: " + confirmFlightResponse);
 
-            // confirm hotel booking
-            WebTarget confirmHotelTarget = client.target(outputHotel.getUrl());
-            Response confirmHotelResponse = confirmHotelTarget.request().accept(MediaType.TEXT_PLAIN).put(Entity.json(""));
-            System.out.println("Confirm flight response: " + confirmHotelResponse);
+            // cancel everything if flight confirmation fails
+            if (confirmFlightResponse.getStatus() != 200) {
+                try {
+                    WebTarget cancelFlightTarget = client.target(outputFlight.getUrl());
+                    Response deleteFlightResponse = cancelFlightTarget.request().accept(MediaType.TEXT_PLAIN).delete();
+                    System.out.println("Cancel flight response: " + deleteFlightResponse);
+                } catch (Exception e) {
+                    System.out.println("Cancel flight request failed" + e.getMessage());
+                }
 
+                // cancel hotel booking
+                try {
+                    WebTarget deleteHotelTarget = client.target(outputHotel.getUrl());
+                    Response deleteHotelResponse = deleteHotelTarget.request().accept(MediaType.TEXT_PLAIN).delete();
+                    System.out.println("Cancel hotel response: " + deleteHotelResponse);
+                } catch (Exception e) {
+                    System.out.println("Cancel hotel request failed" + e.getMessage());
+                }
+
+                System.out.println("Canceled preliminary bookings");
+                return;
+            }
+
+            // confirm hotel booking - multiple tries to make sure
+            WebTarget confirmHotelTarget = client.target(outputHotel.getUrl());
+            Response confirmHotelResponse;
+            int requests = 0;
+            final int MAX_REPEAT_REQUESTS = 100;
+            do {
+                confirmHotelResponse = confirmHotelTarget.request().accept(MediaType.TEXT_PLAIN).put(Entity.json(""));
+                requests++;
+            } while (confirmHotelResponse.getStatus() != 200 && requests < MAX_REPEAT_REQUESTS);
+
+            System.out.println("Confirm flight response: " + confirmHotelResponse);
 
         } catch (Exception e) {
             e.printStackTrace();
